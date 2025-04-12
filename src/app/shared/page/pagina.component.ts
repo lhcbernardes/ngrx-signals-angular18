@@ -12,7 +12,14 @@ import { ListaComponent } from './list/lista.component';
 export class PaginaComponent implements OnInit {
   constructor(public store: ListaStore) {}
 
+  meusNomes: string[] = ['Ana', 'Carlos', 'Beatriz', 'Daniel'];
+
   ngOnInit() {
     this.store.loadOptions();
+    this.store.setNomes(this.meusNomes);
+  }
+
+  alternar() {
+    this.store.alternarValor();
   }
 }

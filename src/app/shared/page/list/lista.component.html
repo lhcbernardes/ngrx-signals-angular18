@@ -1,27 +1,35 @@
 <div class="filtros">
-  <input
-    type="text"
-    placeholder="Buscar item..."
-    (input)="onInput($event)"
+  <input 
+    type="text" 
+    placeholder="Buscar item..." 
+    (input)="onInput($event)" 
     [value]="store.searchTerm()"
   />
 
-  <select (change)="store.setCategoriaFilter($any($event.target).value)">
-    <option value="">Todas categorias</option>
-    <option>Frontend</option>
-    <option>Backend</option>
-  </select>
-
-  <select (change)="store.setStatusFilter($any($event.target).value)">
+  <select (change)="onSelectChange($event, 'status')">
     <option value="">Todos status</option>
-    <option>Ativo</option>
-    <option>Beta</option>
+    <option *ngFor="let status of store.status()" [value]="status">{{ status }}</option>
   </select>
 
-  <select (change)="store.setPlataformaFilter($any($event.target).value)">
-    <option value="">Todas plataformas</option>
-    <option>Web</option>
+  <select (change)="onSelectChange($event, 'categoria')">
+    <option value="">Todas categorias</option>
+    <option *ngFor="let categorie of store.categorias()" [value]="categorie">{{ categorie }}</option>
   </select>
+
+  <select (change)="onSelectChange($event, 'plataforma')">
+    <option value="">Todas plataformas</option>
+    <option *ngFor="let paltaforma of store.plataformas()" [value]="paltaforma">{{ paltaforma }}</option>
+  </select>
+
+  <button (click)="limparFiltros()">Limpar Filtros</button>
+</div>
+
+<div class="filtros-ativos">
+  <p><strong>Busca:</strong> {{ store.searchTerm() }}</p>
+  <p><strong>Status:</strong> {{ store.statusFilter() }}</p>
+  <p><strong>Categoria:</strong> {{ store.categoriaFilter() }}</p>
+  <p><strong>Plataforma:</strong> {{ store.plataformaFilter() }}</p>
+  <p><strong>Valor Atual (Switch):</strong> {{ store.valorAtual() }}</p>
 </div>
 
 <table>

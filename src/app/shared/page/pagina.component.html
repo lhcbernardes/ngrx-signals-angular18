@@ -2,6 +2,20 @@
   <h1>NGRX-SIGNALS</h1>
 </div>
 
+<div class="strings-container">
+  <h4>Indexando nomes pelo componente</h4>
+  <ul>
+    <li *ngFor="let nome of store.nomes()">{{ nome }}</li>
+  </ul>
+</div>
+
+<div>
+  <label>
+    <input type="checkbox" (change)="alternar()" [checked]="store.valorAtual() === store.valores[1]" />
+    <span>{{ store.valorAtual() }}</span>
+  </label>
+</div>
+
 <div class="list-container">
   <app-lista></app-lista>
 </div>

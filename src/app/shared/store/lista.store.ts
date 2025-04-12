@@ -3,18 +3,22 @@ import { ListaService } from '../services/lista.service';
 
 @Injectable({ providedIn: 'root' })
 export class ListaStore {
-
   // Dados que são exibidos na tabela
   itemsLoading = signal(false);
   items = signal<{ nome: string; categoria: string; status: string; plataforma: string }[]>([]);
 
   private effectsInitialized = false;
 
+  nomes = signal<string[]>([]);
+
+  valores = ['Ativo', 'Inativo'];
+  valorAtual = signal(this.valores[0]);
+
   // Filtros
-  searchTerm = signal('');
-  categoriaFilter = signal('');
-  statusFilter = signal('');
-  plataformaFilter = signal('');
+  searchTerm = signal<string>('');
+  categoriaFilter = signal<string>('');
+  statusFilter = signal<string>('');
+  plataformaFilter = signal<string>('');
 
   // Opções para os selects
   categorias = signal<string[]>([]);
@@ -23,6 +27,10 @@ export class ListaStore {
 
   constructor(private service: ListaService) {
     this.setupEffects();
+  }
+
+  setNomes(novosNomes: string[]) {
+    this.nomes.set(novosNomes);
   }
 
   public loadOptions(): void {
@@ -47,28 +55,27 @@ export class ListaStore {
       categoria: this.categoriaFilter(),
       status: this.statusFilter(),
       plataforma: this.plataformaFilter(),
+      checkSwitch: this.valorAtual(),
     };
 
-    this.service.getItems(params).subscribe((data: any) => { 
+    this.service.getItems(params).subscribe((data: any) => {
       this.items.set(data);
       this.itemsLoading.set(false);
     });
   }
 
-  setSearchTerm(value: string) {
-    this.searchTerm.set(value);
+  alternarValor() {
+    const proximoValor = this.valorAtual() === this.valores[0] ? this.valores[1] : this.valores[0];
+    this.valorAtual.set(proximoValor);
   }
 
-  setCategoriaFilter(value: string) {
-    this.categoriaFilter.set(value);
-  }
-
-  setStatusFilter(value: string) {
-    this.statusFilter.set(value);
-  }
-
-  setPlataformaFilter(value: string) {
-    this.plataformaFilter.set(value);
+  // Limpa todos os filtros
+  limparFiltros() {
+    this.searchTerm.set('');
+    this.statusFilter.set('');
+    this.categoriaFilter.set('');
+    this.plataformaFilter.set('');
+    this.valorAtual.set(this.valores[0]);
   }
 
   private setupEffects() {
@@ -78,12 +85,14 @@ export class ListaStore {
       const categoria = this.categoriaFilter();
       const status = this.statusFilter();
       const plataforma = this.plataformaFilter();
+      const checkSwitch = this.valorAtual();
 
       console.log('Filtros atualizados:', {
         search,
         categoria,
         status,
-        plataforma
+        plataforma,
+        checkSwitch,
       });
 
       this.fetchItems();
