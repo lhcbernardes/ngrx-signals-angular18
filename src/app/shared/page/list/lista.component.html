@@ -1,38 +1,40 @@
-<div class="filtros">
-  <input 
-    type="text" 
-    placeholder="Buscar item..." 
-    (input)="onInput($event)" 
-    [value]="store.searchTerm()"
-  />
+<form class="filtros">
+  <app-search-input
+    placeholder="Buscar itens..."
+    [debounceTime]="400"
+    [value]="store.filtros().searchTerm"
+    (searchChange)="onSearchChange($event)"
+    (searchClear)="onSearchClear()"
+    [disabled]="store.loading()"
+  ></app-search-input>
 
-  <select (change)="onSelectChange($event, 'status')">
+  <select (change)="onSelectChange('status', $event)" [value]="store.filtros().status">
     <option value="">Todos status</option>
     <option *ngFor="let status of store.status()" [value]="status">{{ status }}</option>
   </select>
 
-  <select (change)="onSelectChange($event, 'categoria')">
+  <select (change)="onSelectChange('categoria', $event)" [value]="store.filtros().categoria">
     <option value="">Todas categorias</option>
-    <option *ngFor="let categorie of store.categorias()" [value]="categorie">{{ categorie }}</option>
+    <option *ngFor="let categoria of store.categorias()" [value]="categoria">{{ categoria }}</option>
   </select>
 
-  <select (change)="onSelectChange($event, 'plataforma')">
+  <select (change)="onSelectChange('plataforma', $event)" [value]="store.filtros().plataforma">
     <option value="">Todas plataformas</option>
-    <option *ngFor="let paltaforma of store.plataformas()" [value]="paltaforma">{{ paltaforma }}</option>
+    <option *ngFor="let plataforma of store.plataformas()" [value]="plataforma">{{ plataforma }}</option>
   </select>
 
-  <button (click)="limparFiltros()">Limpar Filtros</button>
-</div>
+  <button type="button" (click)="alternarValor()" [disabled]="store.loading()">
+    {{ store.filtros().checkSwitch }}
+  </button>
 
-<div class="filtros-ativos">
-  <p><strong>Busca:</strong> {{ store.searchTerm() }}</p>
-  <p><strong>Status:</strong> {{ store.statusFilter() }}</p>
-  <p><strong>Categoria:</strong> {{ store.categoriaFilter() }}</p>
-  <p><strong>Plataforma:</strong> {{ store.plataformaFilter() }}</p>
-  <p><strong>Valor Atual (Switch):</strong> {{ store.valorAtual() }}</p>
-</div>
+  <button type="button" (click)="limparFiltros()" [disabled]="store.loading()">
+    Limpar Filtros
+  </button>
+</form>
 
-<table>
+<div *ngIf="store.loading()">Carregando itens...</div>
+
+<table *ngIf="store.items().length > 0">
   <thead>
     <tr>
       <th>Nome</th>
@@ -50,3 +52,9 @@
     </tr>
   </tbody>
 </table>
+
+<div *ngIf="store.items().length === 0 && !store.loading()">
+  Nenhum item encontrado com os filtros atuais.
+</div>
+
+<button (click)="goBack()">Voltar</button>
