@@ -1,8 +1,8 @@
 <div class="datatable-container">
   <div class="header">
     <h2>DataTables Nativo - Sem jQuery</h2>
-    <p>Esta tabela demonstra uma implementação nativa do DataTables com coluna fixa no Angular 18.</p>
-    <p><strong>Características:</strong> Scroll horizontal, primeira coluna fixa, paginação, busca e ordenação - tudo nativo!</p>
+    <p>Esta tabela demonstra uma implementação nativa do DataTables com colunas fixas configuráveis no Angular 18.</p>
+    <p><strong>Características:</strong> Scroll horizontal, colunas fixas configuráveis, paginação, busca e ordenação - tudo nativo!</p>
   </div>
 
   <div class="controls">
@@ -27,6 +27,20 @@
         </label>
       </div>
       
+      <div class="fixed-columns-control">
+        <label>
+          Colunas Fixas:
+          <select [(ngModel)]="fixedColumnsCount" (change)="onFixedColumnsChange()">
+            <option [value]="0">0 (Nenhuma)</option>
+            <option [value]="1">1 (Nome)</option>
+            <option [value]="2">2 (Nome + Cargo)</option>
+            <option [value]="3">3 (Nome + Cargo + Localização)</option>
+            <option [value]="4">4 (Nome + Cargo + Localização + Departamento)</option>
+            <option [value]="5">5 (Nome + Cargo + Localização + Departamento + Salário)</option>
+          </select>
+        </label>
+      </div>
+      
       <div class="search-control">
         <label>
           Buscar:
@@ -40,26 +54,28 @@
       </div>
     </div>
 
-    <!-- Tabela com coluna fixa -->
+    <!-- Tabela com colunas fixas -->
     <div class="table-wrapper" #tableWrapper>
-      <!-- Coluna fixa (Nome) -->
-      <div class="fixed-column" #fixedColumn>
+      <!-- Colunas fixas -->
+      <div class="fixed-columns" #fixedColumns *ngIf="fixedColumnsCount > 0">
         <table class="fixed-table">
           <thead>
             <tr>
               <th 
+                *ngFor="let column of getFixedColumns()"
+                [style.width]="column.width"
                 class="sortable" 
-                (click)="onSort('nome')"
-                [class.sorted]="isSorted('nome')"
+                (click)="onSort(column.key)"
+                [class.sorted]="isSorted(column.key)"
               >
-                Nome {{ getSortIcon('nome') }}
+                {{ column.title }} {{ getSortIcon(column.key) }}
               </th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let employee of displayedEmployees; let i = index" 
                 [class.even]="i % 2 === 0">
-              <td>{{ employee.nome }}</td>
+              <td *ngFor="let value of getFixedColumnValues(employee)">{{ value }}</td>
             </tr>
           </tbody>
         </table>
@@ -71,7 +87,7 @@
           <thead>
             <tr>
               <th 
-                *ngFor="let column of columns.slice(1)" 
+                *ngFor="let column of getScrollableColumns()" 
                 [style.width]="column.width"
                 class="sortable"
                 (click)="onSort(column.key)"
@@ -84,14 +100,7 @@
           <tbody>
             <tr *ngFor="let employee of displayedEmployees; let i = index" 
                 [class.even]="i % 2 === 0">
-              <td [style.width]="columns[1].width">{{ employee.cargo }}</td>
-              <td [style.width]="columns[2].width">{{ employee.localizacao }}</td>
-              <td [style.width]="columns[3].width">{{ employee.departamento }}</td>
-              <td [style.width]="columns[4].width">{{ employee.salario }}</td>
-              <td [style.width]="columns[5].width">{{ employee.dataContratacao }}</td>
-              <td [style.width]="columns[6].width">{{ employee.telefone }}</td>
-              <td [style.width]="columns[7].width">{{ employee.email }}</td>
-              <td [style.width]="columns[8].width">{{ employee.status }}</td>
+              <td *ngFor="let value of getScrollableColumnValues(employee)">{{ value }}</td>
             </tr>
           </tbody>
         </table>
@@ -137,7 +146,7 @@
     <h3>Como funciona (Implementação Nativa):</h3>
     <ul>
       <li><strong>Scroll Horizontal:</strong> Implementado com CSS overflow-x e JavaScript</li>
-      <li><strong>Coluna Fixa:</strong> Usando position: sticky e sincronização de scroll</li>
+      <li><strong>Colunas Fixas Configuráveis:</strong> Selecione quantas colunas devem ficar fixas (0 a 5)</li>
       <li><strong>Paginação:</strong> Lógica nativa com slice() e cálculos de página</li>
       <li><strong>Busca:</strong> Filtro nativo usando includes() em todas as colunas</li>
       <li><strong>Ordenação:</strong> Sort nativo com localeCompare()</li>

@@ -31,7 +31,7 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   
   @ViewChild('tableContainer') tableContainer!: ElementRef;
   @ViewChild('tableWrapper') tableWrapper!: ElementRef;
-  @ViewChild('fixedColumn') fixedColumn!: ElementRef;
+  @ViewChild('fixedColumns') fixedColumns!: ElementRef;
 
   // Dados originais
   originalEmployees: Employee[] = [
@@ -145,6 +145,7 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   totalRecords = 0;
   searchTerm = '';
   sortConfig: SortConfig = { column: 'nome', direction: 'asc' };
+  fixedColumnsCount = 1; // Nova propriedade para controlar quantas colunas ficam fixas
 
   // Configurações de colunas
   columns = [
@@ -172,7 +173,7 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   }
 
   ngAfterViewInit(): void {
-    this.setupFixedColumn();
+    this.setupFixedColumns();
   }
 
   ngOnDestroy(): void {
@@ -181,7 +182,7 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
 
   @HostListener('window:resize')
   onResize(): void {
-    this.setupFixedColumn();
+    this.setupFixedColumns();
   }
 
   private initializeData(): void {
@@ -189,16 +190,36 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
     this.applyFiltersAndPagination();
   }
 
-  private setupFixedColumn(): void {
-    // Sincroniza o scroll da coluna fixa com o scroll horizontal
-    if (this.tableWrapper && this.fixedColumn) {
+  private setupFixedColumns(): void {
+    // Sincroniza o scroll das colunas fixas com o scroll horizontal
+    if (this.tableWrapper && this.fixedColumns) {
       const tableWrapper = this.tableWrapper.nativeElement;
-      const fixedColumn = this.fixedColumn.nativeElement;
+      const fixedColumns = this.fixedColumns.nativeElement;
 
       tableWrapper.addEventListener('scroll', () => {
-        fixedColumn.scrollTop = tableWrapper.scrollTop;
+        fixedColumns.scrollTop = tableWrapper.scrollTop;
       });
     }
+  }
+
+  // Método para obter colunas fixas
+  getFixedColumns() {
+    return this.columns.slice(0, this.fixedColumnsCount);
+  }
+
+  // Método para obter colunas scrolláveis
+  getScrollableColumns() {
+    return this.columns.slice(this.fixedColumnsCount);
+  }
+
+  // Método para obter valores das colunas fixas
+  getFixedColumnValues(employee: Employee) {
+    return this.getFixedColumns().map(column => employee[column.key as keyof Employee]);
+  }
+
+  // Método para obter valores das colunas scrolláveis
+  getScrollableColumnValues(employee: Employee) {
+    return this.getScrollableColumns().map(column => employee[column.key as keyof Employee]);
   }
 
   // Busca
@@ -227,6 +248,16 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   onPageSizeChange(): void {
     this.currentPage = 1;
     this.applyFiltersAndPagination();
+  }
+
+  // Método para alterar número de colunas fixas
+  onFixedColumnsChange(): void {
+    // Reaplicar filtros e paginação para atualizar a visualização
+    this.applyFiltersAndPagination();
+    // Reconfigurar as colunas fixas após a mudança
+    setTimeout(() => {
+      this.setupFixedColumns();
+    }, 0);
   }
 
   private applyFiltersAndPagination(): void {
