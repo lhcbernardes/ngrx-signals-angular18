@@ -1,0 +1,147 @@
+<div class="datatable-container">
+  <div class="header">
+    <h2>DataTables Nativo - Sem jQuery</h2>
+    <p>Esta tabela demonstra uma implementação nativa do DataTables com coluna fixa no Angular 18.</p>
+    <p><strong>Características:</strong> Scroll horizontal, primeira coluna fixa, paginação, busca e ordenação - tudo nativo!</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" (click)="addNewEmployee()">
+      ➕ Adicionar Funcionário
+    </button>
+    <button class="btn btn-secondary" (click)="reloadTable()">
+      🔄 Recarregar Tabela
+    </button>
+  </div>
+
+  <div class="table-container" #tableContainer>
+    <!-- Controles superiores -->
+    <div class="table-controls">
+      <div class="length-control">
+        <label>
+          Mostrar 
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+          registros
+        </label>
+      </div>
+      
+      <div class="search-control">
+        <label>
+          Buscar:
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            (input)="onSearch()"
+            placeholder="Digite para buscar..."
+          >
+        </label>
+      </div>
+    </div>
+
+    <!-- Tabela com coluna fixa -->
+    <div class="table-wrapper" #tableWrapper>
+      <!-- Coluna fixa (Nome) -->
+      <div class="fixed-column" #fixedColumn>
+        <table class="fixed-table">
+          <thead>
+            <tr>
+              <th 
+                class="sortable" 
+                (click)="onSort('nome')"
+                [class.sorted]="isSorted('nome')"
+              >
+                Nome {{ getSortIcon('nome') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let employee of displayedEmployees; let i = index" 
+                [class.even]="i % 2 === 0">
+              <td>{{ employee.nome }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tabela principal com scroll -->
+      <div class="scrollable-table">
+        <table class="main-table">
+          <thead>
+            <tr>
+              <th 
+                *ngFor="let column of columns.slice(1)" 
+                [style.width]="column.width"
+                class="sortable"
+                (click)="onSort(column.key)"
+                [class.sorted]="isSorted(column.key)"
+              >
+                {{ column.title }} {{ getSortIcon(column.key) }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let employee of displayedEmployees; let i = index" 
+                [class.even]="i % 2 === 0">
+              <td [style.width]="columns[1].width">{{ employee.cargo }}</td>
+              <td [style.width]="columns[2].width">{{ employee.localizacao }}</td>
+              <td [style.width]="columns[3].width">{{ employee.departamento }}</td>
+              <td [style.width]="columns[4].width">{{ employee.salario }}</td>
+              <td [style.width]="columns[5].width">{{ employee.dataContratacao }}</td>
+              <td [style.width]="columns[6].width">{{ employee.telefone }}</td>
+              <td [style.width]="columns[7].width">{{ employee.email }}</td>
+              <td [style.width]="columns[8].width">{{ employee.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Informações e paginação -->
+    <div class="table-info">
+      <div class="info-text">
+        Mostrando {{ (currentPage - 1) * pageSize + 1 }} a {{ Math.min(currentPage * pageSize, totalRecords) }} de {{ totalRecords }} registros
+      </div>
+      
+      <div class="pagination">
+        <button 
+          class="page-btn" 
+          [disabled]="currentPage === 1"
+          (click)="onPageChange(currentPage - 1)"
+        >
+          Anterior
+        </button>
+        
+        <button 
+          *ngFor="let page of getPageNumbers()" 
+          class="page-btn"
+          [class.active]="page === currentPage"
+          (click)="onPageChange(page)"
+        >
+          {{ page }}
+        </button>
+        
+        <button 
+          class="page-btn" 
+          [disabled]="currentPage === totalPages"
+          (click)="onPageChange(currentPage + 1)"
+        >
+          Próximo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info">
+    <h3>Como funciona (Implementação Nativa):</h3>
+    <ul>
+      <li><strong>Scroll Horizontal:</strong> Implementado com CSS overflow-x e JavaScript</li>
+      <li><strong>Coluna Fixa:</strong> Usando position: sticky e sincronização de scroll</li>
+      <li><strong>Paginação:</strong> Lógica nativa com slice() e cálculos de página</li>
+      <li><strong>Busca:</strong> Filtro nativo usando includes() em todas as colunas</li>
+      <li><strong>Ordenação:</strong> Sort nativo com localeCompare()</li>
+      <li><strong>Performance:</strong> Otimizado para grandes datasets</li>
+    </ul>
+  </div>
+</div>
