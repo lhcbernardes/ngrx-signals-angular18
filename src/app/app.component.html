@@ -1,1 +1,31 @@
-<router-outlet></router-outlet>
+<div class="app-container">
+  <h1>{{ title }}</h1>
+  
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button 
+      *ngFor="let tab of tabs" 
+      (click)="activeTab = tab.id"
+      [class.active]="activeTab === tab.id"
+      class="tab-btn">
+      {{ tab.name }}
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <div *ngIf="activeTab === 'lottie'" class="tab-panel">
+      <app-lottie-example></app-lottie-example>
+    </div>
+    
+    <div *ngIf="activeTab === 'formly'" class="tab-panel">
+      <app-formly-example></app-formly-example>
+    </div>
+    
+    <div *ngIf="activeTab === 'dynamic'" class="tab-panel">
+      <app-dynamic-form></app-dynamic-form>
+    </div>
+  </div>
+
+  <router-outlet></router-outlet>
+</div>
