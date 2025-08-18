@@ -14,17 +14,21 @@
 
   <!-- Tab Content -->
   <div class="tab-content">
-    <div *ngIf="activeTab === 'lottie'" class="tab-panel">
-      <app-lottie-example></app-lottie-example>
-    </div>
-    
-    <div *ngIf="activeTab === 'formly'" class="tab-panel">
-      <app-formly-example></app-formly-example>
-    </div>
-    
-    <div *ngIf="activeTab === 'dynamic'" class="tab-panel">
-      <app-dynamic-form></app-dynamic-form>
-    </div>
+                <div *ngIf="activeTab === 'lottie'" class="tab-panel">
+              <app-lottie-example></app-lottie-example>
+            </div>
+
+            <div *ngIf="activeTab === 'simple'" class="tab-panel">
+              <app-lottie-simple></app-lottie-simple>
+            </div>
+
+            <div *ngIf="activeTab === 'formly'" class="tab-panel">
+              <app-formly-example></app-formly-example>
+            </div>
+
+            <div *ngIf="activeTab === 'dynamic'" class="tab-panel">
+              <app-dynamic-form></app-dynamic-form>
+            </div>
   </div>
 
   <router-outlet></router-outlet>
