@@ -13,6 +13,7 @@ interface Employee {
   telefone: string;
   email: string;
   status: string;
+  [key: string]: any; // Assinatura de índice para permitir acesso dinâmico
 }
 
 interface SortConfig {
@@ -166,6 +167,15 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   // Propriedade Math para uso no template
   Math = Math;
 
+  // Propriedades para edição inline
+  editingEmployeeId: number | null = null;
+  editingSalary: string = '';
+  originalSalary: string = '';
+
+  // Propriedades para controle de gastos
+  maxCompanyExpense = 1000000; // 1 milhão em centavos (R$ 10.000,00)
+  maxCompanyExpenseFormatted = 'R$ 1.000.000,00';
+
   constructor() { }
 
   ngOnInit(): void {
@@ -220,6 +230,14 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
   // Método para obter valores das colunas scrolláveis
   getScrollableColumnValues(employee: Employee) {
     return this.getScrollableColumns().map(column => employee[column.key as keyof Employee]);
+  }
+
+  // Método para obter valor da coluna com suporte a edição
+  getColumnValue(employee: Employee, columnKey: string): any {
+    if (columnKey === 'salario' && this.isEditingSalary(employee)) {
+      return 'EDITING'; // Marcador especial para edição
+    }
+    return employee[columnKey as keyof Employee];
   }
 
   // Busca
@@ -373,4 +391,122 @@ export class DatatableFixedColumnsComponent implements OnInit, AfterViewInit, On
     if (!this.isSorted(columnKey)) return '↕️';
     return this.sortConfig.direction === 'asc' ? '↑' : '↓';
   }
+
+  // Métodos para edição inline de salário
+  startEditSalary(employee: Employee): void {
+    this.editingEmployeeId = employee.id;
+    this.editingSalary = employee.salario;
+    this.originalSalary = employee.salario;
+  }
+
+  saveSalary(employee: Employee): void {
+    if (this.isValidSalary(this.editingSalary)) {
+      // Atualizar o funcionário nos dados originais
+      const originalEmployee = this.originalEmployees.find(emp => emp.id === employee.id);
+      if (originalEmployee) {
+        originalEmployee.salario = this.formatSalary(this.editingSalary);
+      }
+      
+      // Atualizar o funcionário nos dados atuais
+      employee.salario = this.formatSalary(this.editingSalary);
+      
+      // Reaplicar filtros e paginação
+      this.applyFiltersAndPagination();
+      
+      // Finalizar edição
+      this.cancelEditSalary();
+    }
+  }
+
+  cancelEditSalary(): void {
+    this.editingEmployeeId = null;
+    this.editingSalary = '';
+    this.originalSalary = '';
+  }
+
+  isEditingSalary(employee: Employee): boolean {
+    return this.editingEmployeeId === employee.id;
+  }
+
+  isValidSalary(salary: string): boolean {
+    // Remove caracteres não numéricos
+    const numericValue = salary.replace(/\D/g, '');
+    
+    // Verifica se tem pelo menos um dígito
+    if (!numericValue || numericValue === '') return false;
+    
+    // Verifica se o valor numérico é válido
+    const number = parseInt(numericValue, 10);
+    return !isNaN(number) && number > 0;
+  }
+
+  formatSalary(salary: string): string {
+    // Remove caracteres não numéricos
+    const numericValue = salary.replace(/\D/g, '');
+    
+    if (!numericValue || numericValue === '') {
+      return '';
+    }
+    
+    // Converte para número e formata
+    const number = parseInt(numericValue, 10);
+    if (!isNaN(number)) {
+      // Formata como moeda brasileira
+      return (number / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+    
+    return salary;
+  }
+
+  onSalaryKeyDown(event: KeyboardEvent, employee: Employee): void {
+    if (event.key === 'Enter') {
+      this.saveSalary(employee);
+    } else if (event.key === 'Escape') {
+      this.cancelEditSalary();
+    }
+  }
+
+  onSalaryInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    // Remove tudo que não é dígito
+    const numericValue = value.replace(/\D/g, '');
+    
+    if (numericValue === '') {
+      this.editingSalary = '';
+      return;
+    }
+    
+    // Converte para número e formata
+    const number = parseInt(numericValue, 10);
+    if (!isNaN(number)) {
+      // Formata como moeda brasileira
+      const formatted = (number / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      this.editingSalary = formatted;
+    }
+  }
+
+  // Método para calcular porcentagem do salário em relação ao gasto máximo
+  getSalaryPercentage(salary: string): number {
+    const numericValue = salary.replace(/\D/g, '');
+    if (!numericValue) return 0;
+    
+    const salaryInCents = parseInt(numericValue, 10);
+    const percentage = (salaryInCents / this.maxCompanyExpense) * 100;
+    
+    return Math.min(percentage, 100); // Máximo 100%
+  }
+
 }

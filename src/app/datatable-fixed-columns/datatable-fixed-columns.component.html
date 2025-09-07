@@ -15,6 +15,11 @@
   </div>
 
   <div class="table-container" #tableContainer>
+    <!-- Título de gasto máximo -->
+    <div class="expense-header">
+      <h3>💰 Gasto Máximo Permitido: {{ maxCompanyExpenseFormatted }}</h3>
+    </div>
+    
     <!-- Controles superiores -->
     <div class="table-controls">
       <div class="length-control">
@@ -75,7 +80,42 @@
           <tbody>
             <tr *ngFor="let employee of displayedEmployees; let i = index" 
                 [class.even]="i % 2 === 0">
-              <td *ngFor="let value of getFixedColumnValues(employee)">{{ value }}</td>
+              <td *ngFor="let column of getFixedColumns()">
+                <!-- Coluna de salário com edição inline -->
+                <ng-container *ngIf="column.key === 'salario' && isEditingSalary(employee); else normalCell">
+                  <div class="edit-cell">
+                    <div class="salary-edit-container">
+                      <input 
+                        type="text" 
+                        [(ngModel)]="editingSalary"
+                        (input)="onSalaryInput($event)"
+                        (keydown)="onSalaryKeyDown($event, employee)"
+                        (blur)="saveSalary(employee)"
+                        class="salary-input"
+                        placeholder="Digite o salário..."
+                      >
+                      <div class="percentage-display">
+                        <span class="percentage-text">{{ getSalaryPercentage(editingSalary) | number:'1.0-1' }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #normalCell>
+                  <div *ngIf="column.key === 'salario'" class="salary-display">
+                    <span 
+                      class="editable-salary"
+                      (click)="startEditSalary(employee)"
+                      title="Clique para editar"
+                    >
+                      {{ employee[column.key] }}
+                    </span>
+                    <div class="percentage-display">
+                      <span class="percentage-text">{{ getSalaryPercentage(employee[column.key]) | number:'1.0-1' }}%</span>
+                    </div>
+                  </div>
+                  <span *ngIf="column.key !== 'salario'">{{ employee[column.key] }}</span>
+                </ng-template>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -100,7 +140,42 @@
           <tbody>
             <tr *ngFor="let employee of displayedEmployees; let i = index" 
                 [class.even]="i % 2 === 0">
-              <td *ngFor="let value of getScrollableColumnValues(employee)">{{ value }}</td>
+              <td *ngFor="let column of getScrollableColumns()">
+                <!-- Coluna de salário com edição inline -->
+                <ng-container *ngIf="column.key === 'salario' && isEditingSalary(employee); else normalScrollableCell">
+                  <div class="edit-cell">
+                    <div class="salary-edit-container">
+                      <input 
+                        type="text" 
+                        [(ngModel)]="editingSalary"
+                        (input)="onSalaryInput($event)"
+                        (keydown)="onSalaryKeyDown($event, employee)"
+                        (blur)="saveSalary(employee)"
+                        class="salary-input"
+                        placeholder="Digite o salário..."
+                      >
+                      <div class="percentage-display">
+                        <span class="percentage-text">{{ getSalaryPercentage(editingSalary) | number:'1.0-1' }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #normalScrollableCell>
+                  <div *ngIf="column.key === 'salario'" class="salary-display">
+                    <span 
+                      class="editable-salary"
+                      (click)="startEditSalary(employee)"
+                      title="Clique para editar"
+                    >
+                      {{ employee[column.key] }}
+                    </span>
+                    <div class="percentage-display">
+                      <span class="percentage-text">{{ getSalaryPercentage(employee[column.key]) | number:'1.0-1' }}%</span>
+                    </div>
+                  </div>
+                  <span *ngIf="column.key !== 'salario'">{{ employee[column.key] }}</span>
+                </ng-template>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -150,6 +225,8 @@
       <li><strong>Paginação:</strong> Lógica nativa com slice() e cálculos de página</li>
       <li><strong>Busca:</strong> Filtro nativo usando includes() em todas as colunas</li>
       <li><strong>Ordenação:</strong> Sort nativo com localeCompare()</li>
+      <li><strong>Edição Inline:</strong> Clique na coluna de salário (com ícone ✏️) para editar valores diretamente</li>
+      <li><strong>Validação:</strong> Formatação automática de valores monetários brasileiros</li>
       <li><strong>Performance:</strong> Otimizado para grandes datasets</li>
     </ul>
   </div>
